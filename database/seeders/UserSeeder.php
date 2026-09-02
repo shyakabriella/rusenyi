@@ -11,11 +11,11 @@ class UserSeeder extends Seeder
     {
         User::updateOrCreate(
             [
-                'email' => 'admin@gihombo.rw',
+                'email' => 'admin@gihombo.com',
             ],
             [
-                'name' => 'System Admin',
-                'phone' => '0788000001',
+                'name' => 'CYUSA Patrick',
+                'phone' => '0788241224',
                 'role' => 'admin',
                 'password' => 'Gihombo@123',
                 'status' => 'active',
