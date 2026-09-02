@@ -234,6 +234,7 @@ class PayrollController extends BaseController
 
         $users = User::query()
             ->where('is_active', true)
+            ->where('status', 'active')
             ->orderBy('name')
             ->get([
                 'id',

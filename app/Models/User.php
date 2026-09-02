@@ -21,6 +21,7 @@ class User extends Authenticatable
     public const ROLE_AGENT = 'agent';
     public const ROLE_DRIVER = 'driver';
     public const ROLE_STORE = 'store';
+    public const ROLE_WORKER = 'worker';
 
     protected $fillable = [
         'name',
@@ -86,6 +87,11 @@ class User extends Authenticatable
         return $this->role === self::ROLE_STORE;
     }
 
+    public function isWorker(): bool
+    {
+        return $this->role === self::ROLE_WORKER;
+    }
+
     public static function roles(): array
     {
         return [
@@ -95,6 +101,7 @@ class User extends Authenticatable
             self::ROLE_AGENT,
             self::ROLE_DRIVER,
             self::ROLE_STORE,
+            self::ROLE_WORKER,
         ];
     }
 
