@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -118,6 +119,14 @@ class User extends Authenticatable
                 'unassigned_at',
             ])
             ->withTimestamps();
+    }
+
+
+    public function agentProfile(): HasOne
+    {
+        return $this->hasOne(
+            Agent::class
+        );
     }
 
 }
