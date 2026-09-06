@@ -13,13 +13,6 @@ Route::middleware([
         WorkerAttendanceController::class
     )
     ->group(function () {
-        Route::get(
-            '/',
-            'index'
-        );
-
-        Route::post(
-            '/',
-            'store'
-        );
+        Route::get('/', 'index');
+        Route::post('/', 'store');
     });
