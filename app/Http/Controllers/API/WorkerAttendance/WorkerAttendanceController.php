@@ -94,6 +94,9 @@ class WorkerAttendanceController extends BaseController
             'date' =>
                 $date,
 
+            'locked' =>
+                $attendance->isNotEmpty(),
+
             'workers' =>
                 $workers,
 
@@ -185,6 +188,33 @@ class WorkerAttendanceController extends BaseController
                 'max:500',
             ],
         ]);
+
+        if (
+            $request->user()->role === 'store' &&
+            $validated['date'] !== now()->toDateString()
+        ) {
+            return $this->sendError(
+                'Store Officer can only record attendance for today.',
+                [],
+                422
+            );
+        }
+
+        if (
+            $request->user()->role === 'store' &&
+            WorkerAttendance::query()
+                ->whereDate(
+                    'attendance_date',
+                    $validated['date']
+                )
+                ->exists()
+        ) {
+            return $this->sendError(
+                'Attendance for today has already been saved. The next attendance can be recorded tomorrow.',
+                [],
+                422
+            );
+        }
 
         DB::transaction(
             function () use (
