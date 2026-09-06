@@ -155,6 +155,20 @@ class WorkerController extends BaseController
     ): JsonResponse {
         $worker =
             Worker::create([
+                'worker_code' =>
+                    'TMP-' .
+                    strtoupper(
+                        substr(
+                            str_replace(
+                                '-',
+                                '',
+                                (string) \Illuminate\Support\Str::uuid()
+                            ),
+                            0,
+                            20
+                        )
+                    ),
+
                 'name' =>
                     trim(
                         $request->string(
@@ -183,6 +197,14 @@ class WorkerController extends BaseController
                 'created_by' =>
                     $request->user()->id,
             ]);
+
+        $worker->forceFill([
+            'worker_code' =>
+                sprintf(
+                    'WRK-%06d',
+                    $worker->id
+                ),
+        ])->saveQuietly();
 
         return $this->sendResponse(
             $this->data(
