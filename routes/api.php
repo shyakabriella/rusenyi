@@ -2072,3 +2072,6 @@ Route::middleware([
             ]
         );
     });
+
+
+require __DIR__ . '/collection-pickups.php';
