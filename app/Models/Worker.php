@@ -29,12 +29,15 @@ class Worker extends Model
         'notes',
         'created_by',
         'updated_by',
+        'status_changed_by',
+        'status_changed_at',
     ];
 
     protected function casts(): array
     {
         return [
             'user_id' => 'integer',
+            'status_changed_at' => 'datetime',
         ];
     }
 

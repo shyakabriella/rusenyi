@@ -243,6 +243,12 @@ class WorkerController extends BaseController
             'status' =>
                 $request->status,
 
+            'status_changed_by' =>
+                $request->user()->id,
+
+            'status_changed_at' =>
+                now(),
+
             'updated_by' =>
                 $request->user()->id,
         ]);
