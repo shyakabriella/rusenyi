@@ -2075,3 +2075,5 @@ Route::middleware([
 
 
 require __DIR__ . '/collection-pickups.php';
+
+require __DIR__ . '/workers.php';
