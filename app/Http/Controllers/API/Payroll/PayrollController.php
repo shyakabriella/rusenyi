@@ -10,6 +10,7 @@ use App\Http\Requests\API\Payroll\UpdatePayrollRequest;
 use App\Models\ApprovalRequest;
 use App\Models\Payroll;
 use App\Models\User;
+use App\Models\Worker;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -226,37 +227,68 @@ class PayrollController extends BaseController
     {
         if (!$this->canRead($request->user())) {
             return $this->sendError(
-                'You are not allowed to view Payroll employees.',
+                'You are not allowed to view Payroll Workers.',
                 [],
                 403
             );
         }
 
-        $users = User::query()
-            ->where('is_active', true)
-            ->where('status', 'active')
+        $workers = Worker::query()
+            ->where(
+                'status',
+                Worker::STATUS_ACTIVE
+            )
             ->orderBy('name')
-            ->get([
-                'id',
-                'name',
-                'email',
-                'role',
-            ]);
+            ->get()
+            ->map(function (Worker $worker) {
+                return [
+                    'id' =>
+                        $worker->id,
+
+                    'worker_code' =>
+                        $worker->worker_code,
+
+                    'name' =>
+                        $worker->name,
+
+                    'phone' =>
+                        $worker->phone,
+
+                    'email' =>
+                        $worker->email,
+
+                    'national_id' =>
+                        $worker->national_id,
+
+                    'role' =>
+                        'worker',
+                ];
+            })
+            ->values();
 
         return $this->sendResponse([
-            'items' => $users,
-        ], 'Payroll employees retrieved successfully.');
+            'items' =>
+                $workers,
+        ], 'Payroll Workers retrieved successfully.');
     }
 
     public function store(
         StorePayrollRequest $request
     ): JsonResponse {
-        $employee = User::findOrFail(
-            $request->employee_id
-        );
+        $worker =
+            Worker::query()
+                ->where(
+                    'status',
+                    Worker::STATUS_ACTIVE
+                )
+                ->findOrFail(
+                    $request->integer(
+                        'employee_id'
+                    )
+                );
 
         $this->ensureUniqueActivePayroll(
-            $employee->id,
+            $worker->id,
             $request->payroll_month
         );
 
@@ -267,14 +299,17 @@ class PayrollController extends BaseController
         );
 
         $payroll = Payroll::create([
+            'worker_id' =>
+                $worker->id,
+
             'employee_id' =>
-                $employee->id,
+                $worker->user_id,
 
             'employee_name' =>
-                $employee->name,
+                $worker->name,
 
             'employee_role' =>
-                $employee->role,
+                'worker',
 
             'payroll_month' =>
                 $request->payroll_month,
@@ -357,10 +392,28 @@ class PayrollController extends BaseController
             );
         }
 
-        $employeeId =
+        $workerId =
             $request->has('employee_id')
                 ? (int) $request->employee_id
-                : $payroll->employee_id;
+                : $payroll->worker_id;
+
+        if (!$workerId) {
+            return $this->sendError(
+                'Select a Worker for this Payroll record.',
+                [],
+                422
+            );
+        }
+
+        $worker =
+            Worker::query()
+                ->where(
+                    'status',
+                    Worker::STATUS_ACTIVE
+                )
+                ->findOrFail(
+                    $workerId
+                );
 
         $month =
             $request->has('payroll_month')
@@ -368,13 +421,9 @@ class PayrollController extends BaseController
                 : $payroll->payroll_month;
 
         $this->ensureUniqueActivePayroll(
-            $employeeId,
+            $worker->id,
             $month,
             $payroll->id
-        );
-
-        $employee = User::findOrFail(
-            $employeeId
         );
 
         $salary = $this->calculateSalary(
@@ -392,14 +441,17 @@ class PayrollController extends BaseController
         );
 
         $payroll->update([
+            'worker_id' =>
+                $worker->id,
+
             'employee_id' =>
-                $employee->id,
+                $worker->user_id,
 
             'employee_name' =>
-                $employee->name,
+                $worker->name,
 
             'employee_role' =>
-                $employee->role,
+                'worker',
 
             'payroll_month' =>
                 $month,
@@ -726,14 +778,14 @@ class PayrollController extends BaseController
     }
 
     private function ensureUniqueActivePayroll(
-        int $employeeId,
+        int $workerId,
         string $month,
         ?int $ignoreId = null
     ): void {
         $query = Payroll::query()
             ->where(
-                'employee_id',
-                $employeeId
+                'worker_id',
+                $workerId
             )
             ->where(
                 'payroll_month',
@@ -756,7 +808,7 @@ class PayrollController extends BaseController
         if ($query->exists()) {
             throw ValidationException::withMessages([
                 'employee_id' => [
-                    'This employee already has an active Payroll record for the selected month.',
+                    'This Worker already has an active Payroll record for the selected month.',
                 ],
             ]);
         }
@@ -847,6 +899,7 @@ class PayrollController extends BaseController
                 [
                     'admin',
                     'accountant',
+                    'store',
                 ],
                 true
             );

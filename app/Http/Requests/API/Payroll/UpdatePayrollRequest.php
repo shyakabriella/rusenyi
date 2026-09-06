@@ -10,7 +10,11 @@ class UpdatePayrollRequest extends FormRequest
     {
         return in_array(
             $this->user()?->role,
-            ['admin', 'accountant'],
+            [
+                'admin',
+                'accountant',
+                'store',
+            ],
             true
         );
     }
@@ -22,7 +26,7 @@ class UpdatePayrollRequest extends FormRequest
                 'sometimes',
                 'required',
                 'integer',
-                'exists:users,id',
+                'exists:workers,id',
             ],
 
             'payroll_month' => [

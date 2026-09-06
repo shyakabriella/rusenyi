@@ -32,6 +32,7 @@ class Payroll extends Model
     protected $fillable = [
         'payroll_code',
         'employee_id',
+        'worker_id',
         'employee_name',
         'employee_role',
         'payroll_month',
@@ -62,6 +63,7 @@ class Payroll extends Model
     {
         return [
             'employee_id' => 'integer',
+            'worker_id' => 'integer',
 
             'basic_salary' => 'decimal:2',
             'allowances' => 'decimal:2',
@@ -108,6 +110,14 @@ class Payroll extends Model
         return $this->belongsTo(
             User::class,
             'employee_id'
+        );
+    }
+
+    public function worker(): BelongsTo
+    {
+        return $this->belongsTo(
+            Worker::class,
+            'worker_id'
         );
     }
 

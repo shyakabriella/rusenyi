@@ -10,7 +10,11 @@ class StorePayrollRequest extends FormRequest
     {
         return in_array(
             $this->user()?->role,
-            ['admin', 'accountant'],
+            [
+                'admin',
+                'accountant',
+                'store',
+            ],
             true
         );
     }
@@ -21,7 +25,7 @@ class StorePayrollRequest extends FormRequest
             'employee_id' => [
                 'required',
                 'integer',
-                'exists:users,id',
+                'exists:workers,id',
             ],
 
             'payroll_month' => [
