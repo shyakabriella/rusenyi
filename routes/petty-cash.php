@@ -1,7 +1,5 @@
 <?php
 
-use App\Http\Controllers\API\PettyCash\PettyCashController;
-use App\Http\Controllers\API\PettyCash\PettyCashExpenseController;
 use App\Http\Controllers\API\PettyCash\PettyCashRequestController;
 use Illuminate\Support\Facades\Route;
 
@@ -10,65 +8,48 @@ Route::middleware([
     'active.user',
     'password.changed',
 ])
-    ->prefix('petty-cash')
+    ->prefix('petty-cash/requests')
     ->group(function () {
         Route::get(
             '/summary',
-            'summary'
+            [PettyCashRequestController::class, 'summary']
         );
 
         Route::get(
-            '/dashboard',
-            [PettyCashController::class, 'dashboard']
-        );
-
-        Route::get(
-            '/transactions',
-            [PettyCashController::class, 'transactions']
-        );
-
-        Route::get(
-            '/requests',
+            '/',
             [PettyCashRequestController::class, 'index']
         );
 
         Route::post(
-            '/requests',
+            '/',
             [PettyCashRequestController::class, 'store']
         );
 
         Route::get(
-            '/requests/{pettyCashRequest}',
+            '/{pettyCashRequest}',
             [PettyCashRequestController::class, 'show']
+        )->whereNumber(
+            'pettyCashRequest'
         );
 
         Route::post(
-            '/requests/{pettyCashRequest}/approve',
+            '/{pettyCashRequest}/approve',
             [PettyCashRequestController::class, 'approve']
+        )->whereNumber(
+            'pettyCashRequest'
         );
 
         Route::post(
-            '/requests/{pettyCashRequest}/reject',
+            '/{pettyCashRequest}/reject',
             [PettyCashRequestController::class, 'reject']
+        )->whereNumber(
+            'pettyCashRequest'
         );
 
         Route::post(
-            '/requests/{pettyCashRequest}/cancel',
+            '/{pettyCashRequest}/cancel',
             [PettyCashRequestController::class, 'cancel']
-        );
-
-        Route::get(
-            '/expenses',
-            [PettyCashExpenseController::class, 'index']
-        );
-
-        Route::post(
-            '/expenses',
-            [PettyCashExpenseController::class, 'store']
-        );
-
-        Route::post(
-            '/expenses/{pettyCashExpense}/reverse',
-            [PettyCashExpenseController::class, 'reverse']
+        )->whereNumber(
+            'pettyCashRequest'
         );
     });
