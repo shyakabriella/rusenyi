@@ -2079,3 +2079,5 @@ require __DIR__ . '/collection-pickups.php';
 require __DIR__ . '/workers.php';
 
 require __DIR__ . '/worker-attendances.php';
+
+require __DIR__ . '/petty-cash.php';
