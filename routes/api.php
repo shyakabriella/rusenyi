@@ -1829,11 +1829,15 @@ Route::middleware([
         Route::get(
             '/{pettyCashTransaction}',
             'show'
+        )->whereNumber(
+            'pettyCashTransaction'
         );
 
         Route::patch(
             '/{pettyCashTransaction}/reverse',
             'reverse'
+        )->whereNumber(
+            'pettyCashTransaction'
         );
     });
 

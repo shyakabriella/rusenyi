@@ -21,6 +21,142 @@ class PettyCashRequestController extends BaseController
     ) {
     }
 
+    public function summary(
+        Request $request
+    ): JsonResponse {
+        if (
+            !in_array(
+                $request->user()?->role,
+                [
+                    'admin',
+                    'accountant',
+                ],
+                true
+            )
+        ) {
+            return $this->sendError(
+                'You are not allowed to view Petty Cash summary.',
+                [],
+                403
+            );
+        }
+
+        $accountantId =
+            $request->user()->role === 'accountant'
+                ? $request->user()->id
+                : (
+                    $request->filled('accountant_id')
+                        ? (int) $request->accountant_id
+                        : null
+                );
+
+        $requests =
+            PettyCashRequest::query();
+
+        if ($accountantId) {
+            $requests->where(
+                'requested_by',
+                $accountantId
+            );
+        }
+
+        if ($accountantId) {
+            $balance =
+                $this->budget->balanceFor(
+                    $accountantId
+                );
+        } else {
+            $latestTransactions =
+                PettyCashTransaction::query()
+                    ->whereNotNull(
+                        'accountant_id'
+                    )
+                    ->where(
+                        'status',
+                        'posted'
+                    )
+                    ->orderByDesc('id')
+                    ->get([
+                        'accountant_id',
+                        'balance_after',
+                    ])
+                    ->unique(
+                        'accountant_id'
+                    );
+
+            $balance =
+                (float) $latestTransactions
+                    ->sum(
+                        fn ($item) =>
+                            (float) $item->balance_after
+                    );
+        }
+
+        return $this->sendResponse([
+            'currency' =>
+                'RWF',
+
+            'balance' =>
+                number_format(
+                    $balance,
+                    2,
+                    '.',
+                    ''
+                ),
+
+            'total_requests' =>
+                (clone $requests)
+                    ->count(),
+
+            'pending_requests' =>
+                (clone $requests)
+                    ->where(
+                        'status',
+                        PettyCashRequest::STATUS_PENDING
+                    )
+                    ->count(),
+
+            'approved_requests' =>
+                (clone $requests)
+                    ->where(
+                        'status',
+                        PettyCashRequest::STATUS_APPROVED
+                    )
+                    ->count(),
+
+            'approved_amount' =>
+                number_format(
+                    (float) (
+                        (clone $requests)
+                            ->where(
+                                'status',
+                                PettyCashRequest::STATUS_APPROVED
+                            )
+                            ->sum('amount')
+                    ),
+                    2,
+                    '.',
+                    ''
+                ),
+
+            'rejected_requests' =>
+                (clone $requests)
+                    ->where(
+                        'status',
+                        PettyCashRequest::STATUS_REJECTED
+                    )
+                    ->count(),
+
+            'cancelled_requests' =>
+                (clone $requests)
+                    ->where(
+                        'status',
+                        PettyCashRequest::STATUS_CANCELLED
+                    )
+                    ->count(),
+        ], 'Petty Cash summary retrieved successfully.');
+    }
+
     public function index(
         Request $request
     ): JsonResponse {

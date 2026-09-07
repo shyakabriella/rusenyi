@@ -13,6 +13,11 @@ Route::middleware([
     ->prefix('petty-cash')
     ->group(function () {
         Route::get(
+            '/summary',
+            'summary'
+        );
+
+        Route::get(
             '/dashboard',
             [PettyCashController::class, 'dashboard']
         );
